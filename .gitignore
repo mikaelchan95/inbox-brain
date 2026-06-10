@@ -1,0 +1,23 @@
+# Binaries
+/ib
+/bin/
+dist/
+
+# Local data (never commit user data)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.inbox-brain/
+
+# Env / secrets
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Go
+coverage.out
