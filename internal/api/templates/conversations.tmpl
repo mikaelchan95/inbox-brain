@@ -1,0 +1,15 @@
+{{define "title"}}Chats{{end}}
+{{define "content"}}
+<h1>Conversations</h1>
+{{range .Rows}}
+<div class="card">
+<div class="card-head">
+<strong><a href="/conversations/{{.Conversation.ID}}">{{.Name}}</a></strong>
+<span class="chip chip-{{.Label}}">{{.Label}}</span>
+</div>
+<div class="muted">{{.Conversation.Channel}} · {{.MessageCount}} message(s) · {{pct .Confidence}}% business{{with timefmt .Conversation.LastMessageAt}} · last {{.}}{{end}}</div>
+</div>
+{{else}}
+<p class="muted">No conversations yet. Run <code>ib sync</code> or <code>ib demo seed</code>.</p>
+{{end}}
+{{end}}

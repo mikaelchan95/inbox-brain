@@ -1,0 +1,83 @@
+{
+  "conversations": [
+    {
+      "title": "Mum",
+      "isGroup": false,
+      "contact": {"name": "Mum", "phone": "+65 9000 0001"},
+      "messages": [
+        {"sender": "them", "text": "Are you coming back for dinner this Sunday? Aunty Susan is coming too.", "minutesAgo": 700},
+        {"sender": "me", "text": "Yes mum, I'll be back by 6.", "minutesAgo": 690},
+        {"sender": "them", "text": "Good. Don't forget it's grandma's birthday next weekend, we're doing a small family celebration.", "minutesAgo": 680},
+        {"sender": "me", "text": "I won't forget. I'll get the cake on the way.", "minutesAgo": 670}
+      ]
+    },
+    {
+      "title": "Family Group",
+      "isGroup": true,
+      "contact": {"name": "Dad", "phone": "+65 9000 0002"},
+      "messages": [
+        {"sender": "them", "text": "Reminder: grandma's birthday dinner this Sunday 7pm at the usual zi char place.", "minutesAgo": 1560},
+        {"sender": "me", "text": "Noted! See you all there.", "minutesAgo": 1500},
+        {"sender": "them", "text": "I paid for the gift already, transfer me later.", "minutesAgo": 1440},
+        {"sender": "them", "text": "Wah did you all see the photo uncle sent? So funny.", "minutesAgo": 300}
+      ]
+    },
+    {
+      "title": "Football Group",
+      "isGroup": true,
+      "contact": {"name": "Kelvin", "phone": "+65 9000 0003"},
+      "messages": [
+        {"sender": "them", "text": "Eh got match this Saturday or not?", "minutesAgo": 1200},
+        {"sender": "me", "text": "Confirm got. 4pm at the usual pitch.", "minutesAgo": 1140},
+        {"sender": "them", "text": "Steady. I'll chope the court. Who's bringing the bibs?", "minutesAgo": 1080},
+        {"sender": "them", "text": "Don't be late this time ah.", "minutesAgo": 360}
+      ]
+    },
+    {
+      "title": "Mrs Tan",
+      "isGroup": false,
+      "contact": {"name": "Mrs Tan", "phone": "+65 9111 2222"},
+      "messages": [
+        {"sender": "them", "text": "Hi, I saw your tuition centre on Facebook. Do you offer a trial class for Primary 5 maths?", "minutesAgo": 1920},
+        {"sender": "me", "text": "Hi Mrs Tan! Yes we do — the first trial class is free.", "minutesAgo": 1890},
+        {"sender": "them", "text": "That's great. How much per session after the trial?", "minutesAgo": 1860},
+        {"sender": "me", "text": "It's $60 per session, and we have a package price if you sign up for 8 sessions.", "minutesAgo": 1830},
+        {"sender": "them", "text": "Okay can. Is there a Saturday morning slot available for my son?", "minutesAgo": 1800}
+      ]
+    },
+    {
+      "title": "Alex",
+      "isGroup": false,
+      "contact": {"name": "Alex", "phone": "+65 9333 4444"},
+      "messages": [
+        {"sender": "them", "text": "Bro you free for dinner this Friday?", "minutesAgo": 3140},
+        {"sender": "me", "text": "Can! Usual place at 7?", "minutesAgo": 3130},
+        {"sender": "them", "text": "Steady. Eh by the way, my boss wants a new landing page for our product launch. Can you quote me for a landing page?", "minutesAgo": 3000},
+        {"sender": "them", "text": "Timeline is quite tight, when can you finish the first draft?", "minutesAgo": 2950},
+        {"sender": "me", "text": "First draft by next Wednesday should be doable. I'll send you a proper quote tonight.", "minutesAgo": 2880},
+        {"sender": "them", "text": "Also can you send me the invoice for the last job? Finance is chasing me.", "minutesAgo": 600},
+        {"sender": "them", "text": "Dinner still on for Friday right?", "minutesAgo": 170}
+      ]
+    },
+    {
+      "title": "Design Referrals",
+      "isGroup": true,
+      "contact": {"name": "Daniel", "phone": "+65 9555 6666"},
+      "messages": [
+        {"sender": "them", "text": "Hey all, my colleague is looking for a designer to do a brand refresh for her bakery. Budget around $2k.", "minutesAgo": 1700},
+        {"sender": "them", "text": "She needs it done within 6 weeks. Can I pass her your contact?", "minutesAgo": 1690},
+        {"sender": "me", "text": "Sure, sounds good. Send her my number, thanks ah!", "minutesAgo": 1650},
+        {"sender": "them", "text": "Done! She says she'll WhatsApp you this week.", "minutesAgo": 480}
+      ]
+    },
+    {
+      "title": "Unknown +65 9123 4567",
+      "isGroup": false,
+      "contact": {"name": "", "phone": "+65 9123 4567"},
+      "messages": [
+        {"sender": "them", "text": "Hi, I got your number from a friend. Are you available for logo design?", "minutesAgo": 560},
+        {"sender": "them", "text": "What's your rate for a simple logo?", "minutesAgo": 550}
+      ]
+    }
+  ]
+}

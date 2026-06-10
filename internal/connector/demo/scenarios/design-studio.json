@@ -1,0 +1,54 @@
+{
+  "conversations": [
+    {
+      "title": "Jasmine Lim",
+      "isGroup": false,
+      "contact": {"name": "Jasmine Lim", "phone": "+65 9777 1234"},
+      "messages": [
+        {"sender": "them", "text": "Hi! I found your portfolio on Instagram. Are you taking new clients? We're opening a cafe at Joo Chiat and need a website.", "minutesAgo": 420},
+        {"sender": "them", "text": "What's your availability like next month?", "minutesAgo": 410},
+        {"sender": "me", "text": "Hi Jasmine, thanks for reaching out! I have availability from the second week of next month. Happy to chat about the project.", "minutesAgo": 380}
+      ]
+    },
+    {
+      "title": "Marcus (Hartono & Co)",
+      "isGroup": false,
+      "contact": {"name": "Marcus", "phone": "+65 9777 2345"},
+      "messages": [
+        {"sender": "them", "text": "Hi, can you send a quotation for a 12-page brand deck? It's for our investor pitch.", "minutesAgo": 900},
+        {"sender": "them", "text": "We'd need the pricing by Friday for our budget meeting.", "minutesAgo": 880},
+        {"sender": "me", "text": "Sure Marcus, I'll send the proposal and pricing by Thursday.", "minutesAgo": 860}
+      ]
+    },
+    {
+      "title": "Priya",
+      "isGroup": false,
+      "contact": {"name": "Priya", "phone": "+65 9777 3456"},
+      "messages": [
+        {"sender": "them", "text": "Hey, we launched the new website but the colours look off on mobile.", "minutesAgo": 300},
+        {"sender": "them", "text": "The header is also overlapping the menu on my phone. Can you take a look?", "minutesAgo": 290},
+        {"sender": "me", "text": "Sorry about that! Checking now, will push a fix today.", "minutesAgo": 270}
+      ]
+    },
+    {
+      "title": "Wei Jie",
+      "isGroup": false,
+      "contact": {"name": "Wei Jie", "phone": "+65 9777 4567"},
+      "messages": [
+        {"sender": "them", "text": "Bro, mookata tonight?", "minutesAgo": 200},
+        {"sender": "me", "text": "Can. 8pm?", "minutesAgo": 190},
+        {"sender": "them", "text": "Steady lah. Don't bring your laptop this time ah.", "minutesAgo": 185}
+      ]
+    },
+    {
+      "title": "Sarah",
+      "isGroup": false,
+      "contact": {"name": "Sarah", "phone": "+65 9777 5678"},
+      "messages": [
+        {"sender": "them", "text": "Lunch tomorrow? Long time never catch up!", "minutesAgo": 1000},
+        {"sender": "me", "text": "Sure! Usual kopitiam at 12?", "minutesAgo": 990},
+        {"sender": "them", "text": "Okay! Oh and happy belated birthday by the way. Also, my company needs a banner design for our year-end event — how much do you charge?", "minutesAgo": 980}
+      ]
+    }
+  ]
+}

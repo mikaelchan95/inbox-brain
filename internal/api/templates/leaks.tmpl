@@ -1,0 +1,16 @@
+{{define "title"}}Leaks{{end}}
+{{define "content"}}
+<h1>Revenue Leaks</h1>
+{{range .Leaks}}
+<div class="card">
+<div class="card-head">
+<strong><a href="/conversations/{{.ConversationID}}">{{.ConversationName}}</a></strong>
+<span class="muted">{{.Severity}}</span>
+</div>
+<div>{{.Description}}</div>
+<div class="muted">since {{timefmt .Since}}</div>
+</div>
+{{else}}
+<p class="muted">No revenue leaks detected.</p>
+{{end}}
+{{end}}

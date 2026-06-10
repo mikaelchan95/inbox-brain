@@ -1,0 +1,27 @@
+{{define "title"}}Review{{end}}
+{{define "content"}}
+<h1>Classification Review</h1>
+{{range .Sections}}
+<h2 class="section-label">{{.Title}} · {{len .Cards}}</h2>
+{{range .Cards}}
+<div class="card">
+<div class="card-head">
+<strong><a href="/conversations/{{.Conversation.ID}}">{{.Name}}</a></strong>
+<span class="chip chip-{{.Label}}">{{.Label}}</span>
+</div>
+<div class="muted">{{.Conversation.Channel}} · {{pct .Confidence}}% business · {{.MessageCount}} message(s)</div>
+{{with .Reason}}<p class="muted">{{.}}</p>{{end}}
+{{range .Snippets}}<div class="snippet">{{.}}</div>{{end}}
+<div class="actions-row">
+<form method="post" action="/review/{{.Conversation.ID}}/approve"><button class="btn" type="submit">Include</button></form>
+<form method="post" action="/review/{{.Conversation.ID}}/ignore"><button class="btn btn-secondary" type="submit">Ignore</button></form>
+<form method="post" action="/review/{{.Conversation.ID}}/mark-mixed"><button class="btn btn-secondary" type="submit">Mark Mixed</button></form>
+<form method="post" action="/review/{{.Conversation.ID}}/always-include"><button class="btn btn-secondary" type="submit">Always Include</button></form>
+<form method="post" action="/review/{{.Conversation.ID}}/always-ignore"><button class="btn btn-secondary" type="submit">Always Ignore</button></form>
+</div>
+</div>
+{{else}}
+<p class="muted">Nothing here.</p>
+{{end}}
+{{end}}
+{{end}}

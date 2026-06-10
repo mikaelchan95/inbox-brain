@@ -1,0 +1,22 @@
+{{define "title"}}{{.Name}}{{end}}
+{{define "content"}}
+<h1>{{.Name}} <span class="chip chip-{{.Label}}">{{.Label}}</span></h1>
+<p class="muted">{{.Conversation.Channel}}{{if .Classification}} · {{pct .Confidence}}% business{{with .Reason}} · {{.}}{{end}}{{end}}</p>
+
+<h2 class="section-label">Messages</h2>
+{{range .Messages}}
+<div class="message">
+<div class="meta">
+<strong>{{if .Message.SenderName}}{{.Message.SenderName}}{{else}}{{.Message.Direction}}{{end}}</strong>
+<span>{{timefmt .Message.OccurredAt}}</span>
+{{with .Chip}}<span class="chip chip-{{.}}">{{.}}</span>{{end}}
+</div>
+<div>{{.Message.Body}}</div>
+</div>
+{{else}}
+<p class="muted">No messages.</p>
+{{end}}
+
+<h2 class="section-label">Actions</h2>
+{{range .Actions}}{{template "actioncard" .}}{{else}}<p class="muted">No actions for this conversation.</p>{{end}}
+{{end}}

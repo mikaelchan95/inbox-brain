@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{template "title" .}} · Inbox Brain</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<a class="brand" href="/">Inbox Brain</a>
+<nav>
+<a href="/">Home</a>
+<a href="/review">Review</a>
+<a href="/conversations">Chats</a>
+<a href="/actions">Actions</a>
+<a href="/leaks">Leaks</a>
+<a href="/search">Search</a>
+</nav>
+</div>
+</header>
+<main>
+{{template "content" .}}
+</main>
+</body>
+</html>
+{{define "actioncard"}}
+<div class="card">
+<div class="card-head">
+<strong>{{.Action.Title}}</strong>
+<span class="muted">{{actionType .Action.Type}} · {{.ConversationName}} · {{timefmt .Action.CreatedAt}}</span>
+</div>
+{{with .Action.Summary}}<p>{{.}}</p>{{end}}
+{{with .Action.SuggestedReply}}
+<div class="section-label">Suggested reply — select to copy</div>
+<textarea class="reply" readonly rows="3">{{.}}</textarea>
+{{end}}
+<div class="actions-row">
+{{if eq .Action.Status "open"}}
+<form method="post" action="/actions/{{.Action.ID}}/done"><button class="btn" type="submit">Done</button></form>
+<form method="post" action="/actions/{{.Action.ID}}/dismiss"><button class="btn btn-secondary" type="submit">Dismiss</button></form>
+<form method="post" action="/actions/{{.Action.ID}}/snooze"><button class="btn btn-secondary" type="submit">Snooze 24h</button></form>
+{{else}}
+<span class="chip chip-status">{{.Action.Status}}{{if not .Action.SnoozedUntil.IsZero}} until {{timefmt .Action.SnoozedUntil}}{{end}}</span>
+<form method="post" action="/actions/{{.Action.ID}}/reopen"><button class="btn btn-secondary" type="submit">Reopen</button></form>
+{{end}}
+</div>
+</div>
+{{end}}

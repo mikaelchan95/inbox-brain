@@ -1,0 +1,38 @@
+{{define "title"}}Today{{end}}
+{{define "content"}}
+<h1>Today's Actions</h1>
+{{if .Groups}}
+<p class="muted">{{.OpenCount}} open</p>
+{{range .Groups}}
+<h2 class="section-label">{{.Title}} · {{len .Actions}}</h2>
+{{range .Actions}}{{template "actioncard" .}}{{end}}
+{{end}}
+{{else}}
+<p class="muted">No open actions. All caught up.</p>
+{{end}}
+
+<h2 class="section-label">Revenue Leaks</h2>
+{{if .Leaks}}
+<p class="muted">{{len .Leaks}} potential leak(s) · <a href="/leaks">view all</a></p>
+{{range .Leaks}}
+<div class="card">
+<div class="muted">{{.Severity}} · since {{timefmt .Since}}</div>
+<div>{{.Description}}</div>
+</div>
+{{end}}
+{{else}}
+<p class="muted">No revenue leaks detected.</p>
+{{end}}
+
+<h2 class="section-label">Connector Health</h2>
+{{if .Connectors}}
+{{range .Connectors}}
+<div class="card row">
+<span>{{.Name}} <span class="muted">· {{.Channel}}</span></span>
+<span class="muted">{{.Status}}{{with .StatusDetail}} — {{.}}{{end}}</span>
+</div>
+{{end}}
+{{else}}
+<p class="muted">No connectors configured. Run <code>ib telegram connect</code> or <code>ib demo seed</code>.</p>
+{{end}}
+{{end}}

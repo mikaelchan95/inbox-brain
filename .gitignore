@@ -16,6 +16,7 @@ dist/
 
 # OS / editor
 .DS_Store
+.claude/scheduled_tasks.lock
 .idea/
 .vscode/
 

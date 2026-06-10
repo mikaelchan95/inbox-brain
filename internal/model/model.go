@@ -291,15 +291,15 @@ type AuditEvent struct {
 // BusinessProfile describes the user's business; it drives classification
 // scoring and the tone of suggested replies.
 type BusinessProfile struct {
-	BusinessName      string   `json:"businessName"`
-	BusinessType      string   `json:"businessType"`
-	Services          []string `json:"services"`
-	BusinessKeywords  []string `json:"businessKeywords"`
-	AlwaysIgnoreChats []string `json:"alwaysIgnoreChats"`
+	BusinessName       string   `json:"businessName"`
+	BusinessType       string   `json:"businessType"`
+	Services           []string `json:"services"`
+	BusinessKeywords   []string `json:"businessKeywords"`
+	AlwaysIgnoreChats  []string `json:"alwaysIgnoreChats"`
 	AlwaysIncludeChats []string `json:"alwaysIncludeChats"`
-	Timezone          string   `json:"timezone"`
-	Tone              string   `json:"tone"`
-	ReplyLanguage     string   `json:"replyLanguage"`
+	Timezone           string   `json:"timezone"`
+	Tone               string   `json:"tone"`
+	ReplyLanguage      string   `json:"replyLanguage"`
 }
 
 // Classification confidence thresholds (spec §7.3, §10).

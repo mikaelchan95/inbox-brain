@@ -1,0 +1,5 @@
+{{define "title"}}Actions{{end}}
+{{define "content"}}
+<h1>Actions</h1>
+{{range .Actions}}{{template "actioncard" .}}{{else}}<p class="muted">No actions yet. Run <code>ib extract --approved-only</code>.</p>{{end}}
+{{end}}

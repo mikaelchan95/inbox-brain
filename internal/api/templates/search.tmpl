@@ -1,0 +1,41 @@
+{{define "title"}}Search{{end}}
+{{define "content"}}
+<h1>Search</h1>
+<form class="search-form" method="get" action="/search">
+<input type="search" name="q" value="{{.Query}}" placeholder="Search business chats, actions, leads">
+<button class="btn" type="submit">Search</button>
+</form>
+{{if .Query}}
+<h2 class="section-label">Messages · {{len .Results.Messages}}</h2>
+{{range .Results.Messages}}
+<div class="card">
+<div class="card-head">
+<strong><a href="/conversations/{{.ConversationID}}">{{.ConversationName}}</a></strong>
+<span class="muted">{{.Channel}} · {{timefmt .OccurredAt}}</span>
+</div>
+<div class="snippet">{{with .SenderName}}{{.}}: {{end}}{{.Snippet}}</div>
+</div>
+{{else}}
+<p class="muted">No matching messages.</p>
+{{end}}
+<h2 class="section-label">Actions · {{len .Results.Actions}}</h2>
+{{range .Results.Actions}}
+<div class="card">
+<div class="card-head"><strong>{{.Title}}</strong><span class="chip chip-status">{{.Status}}</span></div>
+<div class="muted">{{actionType .Type}} · {{timefmt .CreatedAt}}</div>
+{{with .Summary}}<p>{{.}}</p>{{end}}
+</div>
+{{else}}
+<p class="muted">No matching actions.</p>
+{{end}}
+<h2 class="section-label">Leads · {{len .Results.Leads}}</h2>
+{{range .Results.Leads}}
+<div class="card">
+<div class="card-head"><strong><a href="/conversations/{{.ConversationID}}">Lead</a></strong><span class="chip chip-status">{{.Status}}</span></div>
+{{with .Summary}}<p>{{.}}</p>{{end}}
+</div>
+{{else}}
+<p class="muted">No matching leads.</p>
+{{end}}
+{{end}}
+{{end}}
