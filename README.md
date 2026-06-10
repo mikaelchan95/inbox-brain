@@ -55,10 +55,21 @@ anything.
 
 ## AI provider
 
-Set `ANTHROPIC_API_KEY` and `"aiProvider": "anthropic"` in
-`~/.inbox-brain/config.json` to use Claude for extraction. Without a key,
-Inbox Brain falls back to a deterministic rules-based extractor so the demo
-works fully offline.
+Pick one of three ways to power extraction (set `aiProvider` in
+`~/.inbox-brain/config.json`):
+
+| `aiProvider` | What you need |
+|---|---|
+| `claude-cli` | [Claude Code](https://claude.com/claude-code) installed and logged in with your Claude subscription (`claude`, then log in once). No API key. |
+| `codex-cli` | [Codex CLI](https://github.com/openai/codex) installed and logged in with your ChatGPT subscription (`codex login`). No API key. |
+| `anthropic` | `ANTHROPIC_API_KEY` set in the environment (pay-per-use API). |
+
+With `claude-cli` or `codex-cli`, Inbox Brain pipes the approved transcript to
+the locally installed CLI, which carries your subscription login — nothing to
+configure beyond logging in once. Run `ib doctor` to check your setup.
+
+Without any of these, Inbox Brain falls back to a deterministic rules-based
+extractor so the demo works fully offline.
 
 > Inbox Brain will send selected business-related message text to your
 > configured AI provider for extraction. Personal and ignored chats are not
@@ -83,3 +94,7 @@ go test ./...
 
 See `docs/SPEC.md` for product behavior and `docs/ARCHITECTURE.md` for the
 package layout and contracts.
+
+## License
+
+[MIT](LICENSE)
