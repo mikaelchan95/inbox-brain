@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"unicode/utf8"
+	"unicode"
 )
 
 // SearchResult is one search hit: a message plus enough conversation context
@@ -33,15 +33,19 @@ func (s *Store) SearchMessages(q string, includeIgnored bool, limit int) ([]Sear
 	          FROM messages m
 	          LEFT JOIN conversations c ON c.id = m.conversation_id`
 	if !includeIgnored {
-		query += ` JOIN conversation_classifications cc ON cc.conversation_id = m.conversation_id`
+		query += ` JOIN conversation_classifications cc ON cc.conversation_id = m.conversation_id
+		           LEFT JOIN message_classifications mc ON mc.message_id = m.id`
 	}
 	query += ` WHERE (LOWER(m.body) LIKE ? OR LOWER(COALESCE(c.title, '')) LIKE ?)`
 	args := []any{pattern, pattern}
 	if !includeIgnored {
+		// Also keep personal-classified messages inside mixed chats out of
+		// default search (spec §14: don't expose personal snippets).
 		query += ` AND NOT (COALESCE(cc.user_override, '') = 'personal'
 		                    OR (COALESCE(cc.user_override, '') = '' AND cc.classification = 'personal'))
 		           AND NOT (cc.classification = 'unknown' AND cc.reviewed_by_user = 0
-		                    AND COALESCE(cc.user_override, '') = '')`
+		                    AND COALESCE(cc.user_override, '') = '')
+		           AND COALESCE(mc.classification, '') != 'personal'`
 	}
 	query += ` ORDER BY m.occurred_at DESC, m.id ASC`
 	if limit > 0 {
@@ -84,19 +88,18 @@ const snippetWindow = 120
 
 // snippet returns ~120 characters of body centered on the first
 // case-insensitive occurrence of q (the whole body when it is short enough,
-// or the leading window when q only matched the conversation title).
+// or the leading window when q only matched the conversation title). Matching
+// is done rune-by-rune: strings.ToLower can change a string's byte length, so
+// byte offsets from the lowered string must not index the original.
 func snippet(body, q string) string {
 	runes := []rune(body)
 	if len(runes) <= snippetWindow {
 		return body
 	}
-	lq := strings.ToLower(q)
-	idx := strings.Index(strings.ToLower(body), lq)
-	if idx < 0 {
+	matchStart, matchLen := runeMatch(runes, []rune(q))
+	if matchStart < 0 {
 		return string(runes[:snippetWindow])
 	}
-	matchStart := utf8.RuneCountInString(body[:idx])
-	matchLen := utf8.RuneCountInString(lq)
 	start := matchStart - (snippetWindow-matchLen)/2
 	if start < 0 {
 		start = 0
@@ -110,4 +113,33 @@ func snippet(body, q string) string {
 		}
 	}
 	return string(runes[start:end])
+}
+
+// runeMatch finds the first case-insensitive occurrence of q in body, both as
+// rune slices, returning the rune offset and match length (-1 when absent).
+func runeMatch(body, q []rune) (start, length int) {
+	if len(q) == 0 || len(q) > len(body) {
+		return -1, 0
+	}
+	lower := func(rs []rune) []rune {
+		out := make([]rune, len(rs))
+		for i, r := range rs {
+			out[i] = unicode.ToLower(r)
+		}
+		return out
+	}
+	b, qq := lower(body), lower(q)
+	for i := 0; i+len(qq) <= len(b); i++ {
+		match := true
+		for j := range qq {
+			if b[i+j] != qq[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return i, len(qq)
+		}
+	}
+	return -1, 0
 }

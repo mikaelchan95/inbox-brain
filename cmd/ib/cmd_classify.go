@@ -146,8 +146,21 @@ func classifyVerdict(e *env, verdict, conversationID string, stdout io.Writer) e
 		if err := e.st.SetUserOverride(conversationID, model.ConvPersonal); err != nil {
 			return err
 		}
+		// Spec §24.5: marking a chat personal purges its derived business
+		// artifacts so nothing from it lingers on the dashboard.
+		nActions, err := e.st.DeleteActionsForConversation(conversationID)
+		if err != nil {
+			return err
+		}
+		nLeads, err := e.st.DeleteLeadsForConversation(conversationID)
+		if err != nil {
+			return err
+		}
 		detail = fmt.Sprintf("user ignored %q as personal via CLI", name)
 		confirmation = fmt.Sprintf("Ignored %q (%s) as personal — it will not be extracted or searched.", name, conversationID)
+		if nActions+nLeads > 0 {
+			confirmation += fmt.Sprintf(" Removed %d derived action(s) and %d lead(s).", nActions, nLeads)
+		}
 	case "mixed":
 		if err := e.st.SetUserOverride(conversationID, model.ConvMixed); err != nil {
 			return err

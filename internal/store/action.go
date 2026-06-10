@@ -100,8 +100,18 @@ func (s *Store) SnoozeAction(id string, until time.Time) error {
 	return nil
 }
 
-// ListActions returns actions matching the filter, newest first.
+// ListActions returns actions matching the filter, newest first. Snoozed
+// actions whose snooze deadline has passed are woken (set back to open) first,
+// so every consumer — dashboard, CLI, leaks — sees them reappear.
 func (s *Store) ListActions(f ActionFilter) ([]model.Action, error) {
+	now := millis(time.Now())
+	if _, err := s.DB.Exec(
+		`UPDATE actions SET status = ?, snoozed_until = 0, updated_at = ?
+		 WHERE status = ? AND snoozed_until > 0 AND snoozed_until <= ?`,
+		model.StatusOpen, now, model.StatusSnoozed, now,
+	); err != nil {
+		return nil, fmt.Errorf("wake snoozed actions: %w", err)
+	}
 	query := `SELECT ` + actionCols + ` FROM actions`
 	var where []string
 	var args []any
@@ -174,6 +184,20 @@ func (s *Store) DeleteActionsForConversation(conversationID string) (int, error)
 	n, err := res.RowsAffected()
 	if err != nil {
 		return 0, fmt.Errorf("delete actions for conversation %s: %w", conversationID, err)
+	}
+	return int(n), nil
+}
+
+// DeleteLeadsForConversation removes leads derived from a conversation and
+// returns how many were deleted.
+func (s *Store) DeleteLeadsForConversation(conversationID string) (int, error) {
+	res, err := s.DB.Exec(`DELETE FROM leads WHERE conversation_id = ?`, conversationID)
+	if err != nil {
+		return 0, fmt.Errorf("delete leads for conversation %s: %w", conversationID, err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("delete leads for conversation %s: %w", conversationID, err)
 	}
 	return int(n), nil
 }

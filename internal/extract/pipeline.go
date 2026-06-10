@@ -25,12 +25,16 @@ type Pipeline struct {
 	Provider   Provider
 	Profile    model.BusinessProfile
 	AutoMode   bool
-	Out        io.Writer // progress output; never nil after NewPipeline
+	// AutoThreshold is the confidence required for AutoMode extraction of
+	// unreviewed business conversations (config autoThreshold).
+	AutoThreshold float64
+	Out           io.Writer // progress output; never nil after NewPipeline
 }
 
-// NewPipeline wires a Pipeline; Out defaults to os.Stdout.
+// NewPipeline wires a Pipeline; Out defaults to os.Stdout and AutoThreshold
+// to model.ThresholdAuto.
 func NewPipeline(s *store.Store, c *classify.Classifier, p Provider, profile model.BusinessProfile, autoMode bool) *Pipeline {
-	return &Pipeline{Store: s, Classifier: c, Provider: p, Profile: profile, AutoMode: autoMode, Out: os.Stdout}
+	return &Pipeline{Store: s, Classifier: c, Provider: p, Profile: profile, AutoMode: autoMode, AutoThreshold: model.ThresholdAuto, Out: os.Stdout}
 }
 
 // ClassifyAll (re)classifies every conversation that has no user override and
@@ -79,9 +83,10 @@ type Summary struct {
 //
 //	user_override personal → skip; user_override business → full thread;
 //	label personal → skip; label business → only if reviewed by the user or
-//	(AutoMode and confidence >= model.ThresholdAuto), otherwise it stays in
-//	the review queue; label/override mixed → business-labeled messages only;
-//	label unknown or no classification → skip.
+//	(AutoMode and confidence >= AutoThreshold), otherwise it stays in the
+//	review queue; override mixed (or label mixed reviewed by the user) →
+//	business-labeled messages only; unreviewed label mixed, label unknown,
+//	or no classification → skip (review queue).
 //
 // Provider failures mark the run failed and processing continues with the
 // other conversations (spec §24.2).
@@ -99,7 +104,7 @@ func (p *Pipeline) ProcessApproved(ctx context.Context) (Summary, error) {
 		if err != nil {
 			return sum, fmt.Errorf("process approved: %w", err)
 		}
-		ok, mixed := eligibility(cls, p.AutoMode)
+		ok, mixed := eligibility(cls, p.AutoMode, p.AutoThreshold)
 		if !ok {
 			sum.ConversationsSkipped++
 			continue
@@ -140,7 +145,7 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, conversationID strin
 	if err != nil {
 		return 0, fmt.Errorf("process conversation: %w", err)
 	}
-	ok, mixed := eligibility(cls, p.AutoMode)
+	ok, mixed := eligibility(cls, p.AutoMode, p.AutoThreshold)
 	if !ok {
 		return 0, fmt.Errorf("conversation %s is not approved for extraction", conversationID)
 	}
@@ -154,9 +159,12 @@ func (p *Pipeline) ProcessConversation(ctx context.Context, conversationID strin
 // eligibility implements the spec §13 privacy gate. It reports whether the
 // conversation may be extracted at all and whether it must be filtered at the
 // message level (mixed).
-func eligibility(cls *model.ConversationClassification, autoMode bool) (ok, mixed bool) {
+func eligibility(cls *model.ConversationClassification, autoMode bool, autoThreshold float64) (ok, mixed bool) {
 	if cls == nil {
 		return false, false // never classified → never extracted
+	}
+	if autoThreshold <= 0 {
+		autoThreshold = model.ThresholdAuto
 	}
 	switch cls.UserOverride {
 	case "":
@@ -170,12 +178,18 @@ func eligibility(cls *model.ConversationClassification, autoMode bool) (ok, mixe
 	}
 	switch cls.Classification {
 	case model.ConvBusiness:
-		if cls.ReviewedByUser || (autoMode && cls.BusinessConfidence >= model.ThresholdAuto) {
+		if cls.ReviewedByUser || (autoMode && cls.BusinessConfidence >= autoThreshold) {
 			return true, false
 		}
 		return false, false // stays in the review queue
 	case model.ConvMixed:
-		return true, true
+		// Classifier-labeled mixed still needs the user's say-so (spec §7.1,
+		// §7.2, §25): only reviewed mixed chats are extracted. Mark-mixed by
+		// the user takes the UserOverride branch above.
+		if cls.ReviewedByUser {
+			return true, true
+		}
+		return false, false // stays in the review queue
 	default:
 		return false, false // personal, unknown
 	}
@@ -192,7 +206,9 @@ func (e *providerFailedError) Unwrap() error { return e.err }
 // approved conversation. Mixed conversations are filtered at the message
 // level: every message is scored with Classifier.ScoreMessage and persisted,
 // and only business-labeled messages with confidence >=
-// model.ThresholdSuggest pass, in both directions (spec §14, §25). Non-mixed
+// model.ThresholdSuggest pass, in both directions (spec §14, §25). A stored
+// user override on a message always wins over re-scoring (spec §12) — the
+// user's "this is personal" decision is never clobbered or sent out. Non-mixed
 // eligible conversations keep the full thread, including the user's outbound
 // replies, for context.
 func (p *Pipeline) eligibleMessages(conv model.Conversation, mixed bool) ([]model.Message, error) {
@@ -205,9 +221,18 @@ func (p *Pipeline) eligibleMessages(conv model.Conversation, mixed bool) ([]mode
 	}
 	var out []model.Message
 	for _, m := range msgs {
-		mc := p.Classifier.ScoreMessage(m)
-		if err := p.Store.SaveMessageClassification(mc); err != nil {
-			return nil, fmt.Errorf("save message classification for %s: %w", m.ID, err)
+		existing, err := p.Store.GetMessageClassification(m.ID)
+		if err != nil {
+			return nil, fmt.Errorf("get message classification for %s: %w", m.ID, err)
+		}
+		var mc model.MessageClassification
+		if existing != nil && existing.Source == model.SourceUserOverride {
+			mc = *existing
+		} else {
+			mc = p.Classifier.ScoreMessage(m)
+			if err := p.Store.SaveMessageClassification(mc); err != nil {
+				return nil, fmt.Errorf("save message classification for %s: %w", m.ID, err)
+			}
 		}
 		if mc.Classification == model.MsgBusiness && mc.BusinessConfidence >= model.ThresholdSuggest {
 			out = append(out, m)
@@ -226,24 +251,24 @@ func (p *Pipeline) extractConversation(ctx context.Context, conv model.Conversat
 		return 0, false, err
 	}
 
-	// Candidates are eligible inbound messages; skip the conversation when
-	// every one of them already has an action anchored to it.
+	// Skip the conversation unless something new arrived since the last
+	// successful run: this keeps re-runs from re-sending already-extracted
+	// context to the provider. IngestedAt (not OccurredAt) makes backfilled
+	// older messages count as new.
+	lastRun, hasRun, err := p.Store.LatestSuccessfulRunStart(conv.ID)
+	if err != nil {
+		return 0, false, err
+	}
+	pending := !hasRun
 	var latestInbound *model.Message
-	pending := false
 	for i := range msgs {
 		m := &msgs[i]
 		if m.Direction != model.DirectionInbound {
 			continue
 		}
 		latestInbound = m
-		if !pending {
-			exists, err := p.Store.ActionExistsForMessage(m.ID)
-			if err != nil {
-				return 0, false, err
-			}
-			if !exists {
-				pending = true
-			}
+		if hasRun && m.IngestedAt.After(lastRun) {
+			pending = true
 		}
 	}
 	if latestInbound == nil || !pending {

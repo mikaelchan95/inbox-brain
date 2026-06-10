@@ -1,6 +1,8 @@
 package store
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -47,6 +49,25 @@ func (s *Store) FinishExtractionRun(r model.ExtractionRun) error {
 		return fmt.Errorf("finish extraction run %s: %w", r.ID, err)
 	}
 	return nil
+}
+
+// LatestSuccessfulRunStart returns the started_at of the most recent
+// successful extraction run for a conversation; ok is false when none exists.
+func (s *Store) LatestSuccessfulRunStart(conversationID string) (t time.Time, ok bool, err error) {
+	var started int64
+	row := s.DB.QueryRow(
+		`SELECT started_at FROM extraction_runs
+		 WHERE conversation_id = ? AND status = ?
+		 ORDER BY started_at DESC LIMIT 1`,
+		conversationID, model.RunSuccess,
+	)
+	if err := row.Scan(&started); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return time.Time{}, false, nil
+		}
+		return time.Time{}, false, fmt.Errorf("latest successful run for %s: %w", conversationID, err)
+	}
+	return fromMillis(started), true, nil
 }
 
 // ListExtractionRuns returns runs newest first; limit <= 0 returns all.

@@ -165,7 +165,11 @@ func gatingConvs() []tconv {
 			{body: "Can you quote me for a landing page?"},
 			{body: "Please send the invoice for the logo design"},
 			{body: "Sure, I will send the invoice tonight", dir: model.DirectionOutbound},
-		}, cls: seedCls(model.ConvMixed, 68, false, "")},
+		}, cls: seedCls(model.ConvMixed, 68, true, "")},
+		{title: "Mixed Unreviewed", msgs: []tmsg{
+			{body: "Dinner with the family this weekend?"},
+			{body: "Also, can I get a quote for a logo?"},
+		}, cls: seedCls(model.ConvMixed, 60, false, "")},
 		{title: "Unknown Chat", msgs: []tmsg{{body: "Hey, long time no see"}},
 			cls: seedCls(model.ConvUnknown, 50, false, "")},
 		{title: "Override Personal", msgs: []tmsg{{body: "Send me your rate card"}},
@@ -274,6 +278,60 @@ func TestProcessApprovedMixedFiltersMessages(t *testing.T) {
 		}
 		if mc == nil {
 			t.Errorf("message %q has no persisted classification", m.Body)
+		}
+	}
+}
+
+func TestProcessApprovedMessageOverrideWins(t *testing.T) {
+	s, convs := buildStore(t, gatingConvs())
+	msgs, err := s.ListMessages(convs["Mixed Chat"].ID, 0)
+	if err != nil {
+		t.Fatalf("list messages: %v", err)
+	}
+	// The user marked an obviously-business message personal: it must never
+	// reach the provider, and re-extraction must not clobber the override.
+	const marked = "Can you quote me for a landing page?"
+	for _, m := range msgs {
+		if m.Body != marked {
+			continue
+		}
+		if err := s.SaveMessageClassification(model.MessageClassification{
+			MessageID:      m.ID,
+			Classification: model.MsgPersonal,
+			Reason:         "user marked personal",
+			Source:         model.SourceUserOverride,
+		}); err != nil {
+			t.Fatalf("save override: %v", err)
+		}
+	}
+
+	prov := &fakeProvider{}
+	p := newTestPipeline(s, prov, false)
+	if _, err := p.ProcessApproved(context.Background()); err != nil {
+		t.Fatalf("ProcessApproved: %v", err)
+	}
+
+	in, ok := prov.inputFor("Mixed Chat")
+	if !ok {
+		t.Fatal("mixed chat never reached the provider")
+	}
+	for _, m := range in.Messages {
+		if m.Body == marked {
+			t.Fatalf("user-overridden personal message leaked to provider: %q", m.Body)
+		}
+	}
+
+	// The override row survived the run un-rescored.
+	for _, m := range msgs {
+		if m.Body != marked {
+			continue
+		}
+		mc, err := s.GetMessageClassification(m.ID)
+		if err != nil {
+			t.Fatalf("get message classification: %v", err)
+		}
+		if mc == nil || mc.Source != model.SourceUserOverride || mc.Classification != model.MsgPersonal {
+			t.Errorf("override clobbered: %+v", mc)
 		}
 	}
 }
@@ -595,7 +653,7 @@ func TestProcessConversation(t *testing.T) {
 		t.Errorf("actions created = %d, want 1", n)
 	}
 
-	ineligible := []string{"Personal Chat", "Unknown Chat", "Override Personal", "Business Unreviewed Low", "No Classification"}
+	ineligible := []string{"Personal Chat", "Unknown Chat", "Override Personal", "Business Unreviewed Low", "Mixed Unreviewed", "No Classification"}
 	for _, title := range ineligible {
 		if _, err := p.ProcessConversation(ctx, convs[title].ID); err == nil {
 			t.Errorf("ProcessConversation(%q) = nil error, want not-approved error", title)

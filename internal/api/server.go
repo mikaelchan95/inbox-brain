@@ -184,7 +184,7 @@ func (sv *server) applyReviewAction(conversationID, verb string) (found bool, er
 	case "approve":
 		err = sv.approveConversation(conversationID)
 	case "ignore":
-		err = sv.store.SetUserOverride(conversationID, model.ConvPersonal)
+		err = sv.ignoreConversation(conversationID)
 	case "mark-mixed":
 		err = sv.store.SetUserOverride(conversationID, model.ConvMixed)
 	case "always-include":
@@ -197,7 +197,7 @@ func (sv *server) applyReviewAction(conversationID, verb string) (found bool, er
 			})
 		}
 	case "always-ignore":
-		if err = sv.store.SetUserOverride(conversationID, model.ConvPersonal); err == nil {
+		if err = sv.ignoreConversation(conversationID); err == nil {
 			_, err = sv.store.AddRule(model.ClassificationRule{
 				WorkspaceID: ws.ID,
 				RuleType:    model.RuleChatName,
@@ -218,6 +218,19 @@ func (sv *server) applyReviewAction(conversationID, verb string) (found bool, er
 		return true, fmt.Errorf("audit review %s %s: %w", verb, conversationID, err)
 	}
 	return true, nil
+}
+
+// ignoreConversation overrides a conversation to personal and purges its
+// derived actions and leads (spec §24.5).
+func (sv *server) ignoreConversation(conversationID string) error {
+	if err := sv.store.SetUserOverride(conversationID, model.ConvPersonal); err != nil {
+		return err
+	}
+	if _, err := sv.store.DeleteActionsForConversation(conversationID); err != nil {
+		return err
+	}
+	_, err := sv.store.DeleteLeadsForConversation(conversationID)
+	return err
 }
 
 // approveConversation marks a conversation reviewed and, when its classifier
