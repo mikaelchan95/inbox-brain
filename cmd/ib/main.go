@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/mikaelchan/inbox-brain/internal/classify"
@@ -146,22 +147,40 @@ func (e *env) newPipeline(p extract.Provider, out io.Writer) (*extract.Pipeline,
 		return nil, fmt.Errorf("load classification rules: %w", err)
 	}
 	pl := extract.NewPipeline(e.st, classify.New(e.cfg.Profile, rules), p, e.cfg.Profile, e.cfg.AutoMode)
+	if e.cfg.AutoThreshold > 0 {
+		pl.AutoThreshold = e.cfg.AutoThreshold
+	}
 	pl.Out = out
 	return pl, nil
 }
 
 // providerNote is printed whenever the offline rules extractor is selected.
-const providerNote = "using offline rules extractor (set ANTHROPIC_API_KEY + aiProvider to use Claude)"
+const providerNote = "using offline rules extractor (set aiProvider to anthropic, claude-cli, or codex-cli to use AI)"
 
-// chooseProvider selects the extraction provider: Anthropic when
-// ANTHROPIC_API_KEY is set AND cfg.AIProvider == "anthropic", otherwise the
-// offline rules provider with a printed note.
+// chooseProvider selects the extraction provider from cfg.AIProvider:
+// "anthropic" needs ANTHROPIC_API_KEY; "claude-cli" / "codex-cli" use a
+// locally installed agent CLI logged into the user's AI subscription (no
+// API key). Anything unavailable falls back to the offline rules provider
+// with a printed note.
 func chooseProvider(cfg *config.Config, stdout io.Writer) extract.Provider {
-	key := os.Getenv("ANTHROPIC_API_KEY")
-	if key != "" && cfg.AIProvider == "anthropic" {
-		return extract.NewAnthropicProvider(key, cfg.AnthropicModel)
+	switch cfg.AIProvider {
+	case "anthropic":
+		if key := os.Getenv("ANTHROPIC_API_KEY"); key != "" {
+			return extract.NewAnthropicProvider(key, cfg.AnthropicModel)
+		}
+		fmt.Fprintln(stdout, "ANTHROPIC_API_KEY not set — "+providerNote)
+	case "claude-cli", "codex-cli":
+		bin := extract.CLIProviderBinary(cfg.AIProvider)
+		if _, err := exec.LookPath(bin); err == nil {
+			if cfg.AIProvider == "claude-cli" {
+				return extract.NewClaudeCLIProvider()
+			}
+			return extract.NewCodexCLIProvider()
+		}
+		fmt.Fprintf(stdout, "%s not found on PATH — %s\n", bin, providerNote)
+	default:
+		fmt.Fprintln(stdout, providerNote)
 	}
-	fmt.Fprintln(stdout, providerNote)
 	return extract.NewRulesProvider()
 }
 

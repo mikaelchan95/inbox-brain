@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 
 	"github.com/mikaelchan/inbox-brain/internal/config"
+	"github.com/mikaelchan/inbox-brain/internal/extract"
 	"github.com/mikaelchan/inbox-brain/internal/store"
 )
 
@@ -62,7 +64,7 @@ func cmdDoctor(args []string, stdout, stderr io.Writer) int {
 	if anthropicKey {
 		report("OK", "anthropic", "ANTHROPIC_API_KEY is set")
 	} else {
-		report("WARN", "anthropic", "ANTHROPIC_API_KEY not set (offline rules extractor will be used)")
+		report("WARN", "anthropic", "ANTHROPIC_API_KEY not set (only needed for aiProvider \"anthropic\")")
 	}
 
 	wacliPath := defaultWacliDB()
@@ -73,8 +75,18 @@ func cmdDoctor(args []string, stdout, stderr io.Writer) int {
 	}
 
 	provider := "rules (offline)"
-	if cfg != nil && anthropicKey && cfg.AIProvider == "anthropic" {
-		provider = fmt.Sprintf("anthropic (model %s)", cfg.AnthropicModel)
+	if cfg != nil {
+		switch {
+		case cfg.AIProvider == "anthropic" && anthropicKey:
+			provider = fmt.Sprintf("anthropic (model %s)", cfg.AnthropicModel)
+		case extract.CLIProviderBinary(cfg.AIProvider) != "":
+			bin := extract.CLIProviderBinary(cfg.AIProvider)
+			if _, err := exec.LookPath(bin); err == nil {
+				provider = fmt.Sprintf("%s (subscription login via %s)", cfg.AIProvider, bin)
+			} else {
+				report("WARN", cfg.AIProvider, bin+" not found on PATH (install it and log in, or change aiProvider)")
+			}
+		}
 	}
 	report("OK", "extraction provider", provider)
 

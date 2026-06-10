@@ -19,7 +19,9 @@ type Config struct {
 
 	Profile model.BusinessProfile `json:"profile"`
 
-	// AIProvider selects the extraction provider: "anthropic" or "rules".
+	// AIProvider selects the extraction provider: "anthropic" (API key),
+	// "claude-cli" / "codex-cli" (subscription login via a local agent CLI),
+	// or "rules" (offline).
 	AIProvider     string `json:"aiProvider"`
 	AnthropicModel string `json:"anthropicModel"`
 
