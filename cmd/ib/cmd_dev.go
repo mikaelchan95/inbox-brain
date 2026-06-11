@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/mikaelchan/inbox-brain/internal/api"
+	"github.com/mikaelchan95/inbox-brain/internal/api"
 )
 
 // cmdDev serves the local dashboard and JSON API.

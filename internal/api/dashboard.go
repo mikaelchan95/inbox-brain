@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/leaks"
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/search"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/leaks"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/search"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 // actionView pairs an action with its conversation's display name.

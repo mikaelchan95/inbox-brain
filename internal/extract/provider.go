@@ -9,7 +9,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 // ProviderInput is the ONLY data ever sent to an AI provider.

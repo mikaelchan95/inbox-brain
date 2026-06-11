@@ -9,10 +9,10 @@ import (
 	"os/signal"
 	"path/filepath"
 
-	"github.com/mikaelchan/inbox-brain/internal/connector/telegram"
-	"github.com/mikaelchan/inbox-brain/internal/connector/wacli"
-	"github.com/mikaelchan/inbox-brain/internal/extract"
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/connector/telegram"
+	"github.com/mikaelchan95/inbox-brain/internal/connector/wacli"
+	"github.com/mikaelchan95/inbox-brain/internal/extract"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 // cmdTelegram handles "ib telegram connect": it validates TELEGRAM_BOT_TOKEN

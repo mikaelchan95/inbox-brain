@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mikaelchan/inbox-brain/internal/search"
+	"github.com/mikaelchan95/inbox-brain/internal/search"
 )
 
 // cmdSearch searches messages, actions and leads for one query. Ignored

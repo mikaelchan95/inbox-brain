@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mikaelchan/inbox-brain/internal/classify"
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/classify"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 // maxContextMessages caps how many eligible messages are sent to a provider

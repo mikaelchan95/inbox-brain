@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mikaelchan/inbox-brain/internal/config"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/config"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 // privacyNotice is the external-AI warning from spec §25.

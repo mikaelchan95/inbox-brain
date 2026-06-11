@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 func decodeJSON[T any](t *testing.T, rec *httptest.ResponseRecorder) T {

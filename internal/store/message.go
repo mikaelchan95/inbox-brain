@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 const messageCols = `id, workspace_id, conversation_id, customer_id, channel, provider, connector_id,

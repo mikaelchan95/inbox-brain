@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/config"
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/config"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 //go:embed templates/*.tmpl

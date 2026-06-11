@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mikaelchan/inbox-brain/internal/config"
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/config"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 // setupHome points IB_HOME at a temp dir so no test ever touches the real

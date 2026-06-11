@@ -7,8 +7,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/mikaelchan/inbox-brain/internal/connector/demo"
-	"github.com/mikaelchan/inbox-brain/internal/extract"
+	"github.com/mikaelchan95/inbox-brain/internal/connector/demo"
+	"github.com/mikaelchan95/inbox-brain/internal/extract"
 )
 
 // cmdDemo handles "ib demo seed --scenario NAME": it seeds the demo scenario

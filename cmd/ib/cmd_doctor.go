@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/mikaelchan/inbox-brain/internal/config"
-	"github.com/mikaelchan/inbox-brain/internal/extract"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/config"
+	"github.com/mikaelchan95/inbox-brain/internal/extract"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 // cmdDoctor checks the local installation and reports one OK/WARN/FAIL line
