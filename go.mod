@@ -1,4 +1,4 @@
-module github.com/mikaelchan/inbox-brain
+module github.com/mikaelchan95/inbox-brain
 
 go 1.25.0
 

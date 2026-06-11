@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 func TestValidateResult(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 var base = time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)

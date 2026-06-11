@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 const (

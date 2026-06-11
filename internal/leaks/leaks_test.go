@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 var testNow = time.Date(2026, 6, 10, 12, 0, 0, 0, time.UTC)

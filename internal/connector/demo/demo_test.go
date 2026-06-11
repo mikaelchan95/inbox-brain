@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 func newTestStore(t *testing.T) (*store.Store, model.Workspace) {

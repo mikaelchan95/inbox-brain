@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 // stubCLI writes an executable shell script to a temp dir and returns its

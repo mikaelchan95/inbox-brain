@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mikaelchan/inbox-brain/internal/extract"
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/extract"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 const classifyUsage = "usage: ib classify conversations|review|approve|ignore|mixed [<conversation-id>]"

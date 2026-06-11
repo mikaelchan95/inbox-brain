@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 func inboundMsg(sender, body, ext string) model.Message {

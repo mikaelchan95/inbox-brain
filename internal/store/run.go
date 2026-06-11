@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 // CreateExtractionRun stores a new extraction run and returns it with

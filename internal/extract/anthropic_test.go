@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
 )
 
 const validActionsJSON = `{"actions":[{"type":"booking_request","title":"Booking request from Mrs Tan","summary":"Wants a Saturday trial class","suggestedReply":"Hi Mrs Tan!","confidence":90,"urgency":"normal","messageExternalId":"tg-1"}]}`

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 // fixture seeds one business conversation, one personal conversation, two

@@ -10,11 +10,11 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/mikaelchan/inbox-brain/internal/classify"
-	"github.com/mikaelchan/inbox-brain/internal/config"
-	"github.com/mikaelchan/inbox-brain/internal/extract"
-	"github.com/mikaelchan/inbox-brain/internal/model"
-	"github.com/mikaelchan/inbox-brain/internal/store"
+	"github.com/mikaelchan95/inbox-brain/internal/classify"
+	"github.com/mikaelchan95/inbox-brain/internal/config"
+	"github.com/mikaelchan95/inbox-brain/internal/extract"
+	"github.com/mikaelchan95/inbox-brain/internal/model"
+	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
 func main() {
