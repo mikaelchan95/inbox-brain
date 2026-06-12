@@ -27,7 +27,15 @@ Everything is stored locally in SQLite under `~/.inbox-brain/`. Single static bi
 # 1. Install (needs Go 1.25+, see Installation below)
 go install github.com/mikaelchan95/inbox-brain/cmd/ib@latest
 
-# 2. Try it on sample data — no accounts, no API keys
+# 2. Run the guided setup — that's it
+ib onboard
+```
+
+`ib onboard` walks you through everything in about 2 minutes: your business profile, connecting inboxes (email, Telegram, WhatsApp — or demo data to just try it), picking an AI provider (it detects what you have installed), and a first sync so you land in a working, classified inbox. It's safe to re-run anytime to change settings.
+
+Prefer to drive manually?
+
+```bash
 ib init
 ib demo seed --scenario tuition-center   # or: design-studio
 ib classify conversations                # local classifier, nothing sent anywhere
@@ -109,6 +117,8 @@ Notes for agents:
 
 ## Connect your real inboxes
 
+> `ib onboard` sets all of these up interactively — the commands below are the manual equivalents.
+
 **Telegram** (first-class):
 
 ```bash
@@ -154,6 +164,7 @@ Without any of these, Inbox Brain falls back to a deterministic rules-based extr
 
 | Command | What it does |
 |---|---|
+| `ib onboard` | Guided setup: profile, inboxes, AI provider, first sync |
 | `ib init [--yes]` | Create the data directory, config and database |
 | `ib demo seed --scenario NAME` | Load a demo scenario (`tuition-center`, `design-studio`) |
 | `ib doctor` | Check the local installation |
