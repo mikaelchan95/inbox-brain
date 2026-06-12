@@ -177,6 +177,7 @@ Without any of these, Inbox Brain falls back to a deterministic rules-based extr
 | `ib classify conversations` | Run the local business/personal classifier |
 | `ib classify review` | List chats waiting for review |
 | `ib classify approve\|ignore\|mixed <id>` | Override a chat's classification |
+| `ib classify approve --all` | Approve every suggested business chat at once |
 | `ib extract --approved-only` | Extract actions from approved chats |
 | `ib today` | Today's open actions and leak count |
 | `ib actions [--json]` | All open actions, oldest first |

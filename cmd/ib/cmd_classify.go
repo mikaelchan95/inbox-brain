@@ -10,7 +10,7 @@ import (
 	"github.com/mikaelchan95/inbox-brain/internal/store"
 )
 
-const classifyUsage = "usage: ib classify conversations|review|approve|ignore|mixed [<conversation-id>]"
+const classifyUsage = "usage: ib classify conversations|review|approve|ignore|mixed [<conversation-id>]\n       ib classify approve --all   (approve every suggested business chat)"
 
 // cmdClassify dispatches the classify subcommands.
 func cmdClassify(args []string, stdout io.Writer) error {
@@ -40,7 +40,16 @@ func cmdClassify(args []string, stdout io.Writer) error {
 	case "review":
 		return classifyReview(e, stdout)
 	case "approve", "ignore", "mixed":
+		if len(rest) == 1 && rest[0] == "--all" {
+			if sub != "approve" {
+				return fmt.Errorf("--all is only supported for approve; run: ib classify approve --all")
+			}
+			return classifyApproveAll(e, stdout)
+		}
 		if len(rest) != 1 {
+			if sub == "approve" {
+				return fmt.Errorf("usage: ib classify approve <conversation-id>|--all")
+			}
 			return fmt.Errorf("usage: ib classify %s <conversation-id>", sub)
 		}
 		return classifyVerdict(e, sub, rest[0], stdout)
@@ -87,7 +96,7 @@ func classifyReview(e *env, stdout io.Writer) error {
 			mixed = append(mixed, line)
 		case eff == model.ConvBusiness && cls.ReviewedByUser:
 			approved++
-		case eff == model.ConvBusiness && cls.BusinessConfidence >= model.ThresholdSuggest:
+		case suggestedBusiness(cls):
 			suggested = append(suggested, line)
 		default: // unknown, or business below the suggest threshold
 			needsReview = append(needsReview, line)
@@ -107,7 +116,72 @@ func classifyReview(e *env, stdout io.Writer) error {
 	printBucket("Mixed chats", mixed)
 	printBucket("Ignored as personal", ignored)
 	fmt.Fprintf(stdout, "Approved: %d conversation(s).\n", approved)
-	fmt.Fprintf(stdout, "Next: ib classify approve|ignore|mixed <conversation-id>\n")
+	fmt.Fprintf(stdout, "Next: ib classify approve|ignore|mixed <conversation-id>, or: ib classify approve --all\n")
+	return nil
+}
+
+// suggestedBusiness reports whether a chat sits in the "Suggested business"
+// review bucket: effective label business with suggest-level confidence, not
+// yet reviewed by the user. Shared by classify review and approve --all so
+// the bulk command approves exactly the set the review listing shows.
+func suggestedBusiness(cls *model.ConversationClassification) bool {
+	return cls != nil && !cls.ReviewedByUser &&
+		effectiveLabel(cls) == model.ConvBusiness &&
+		cls.BusinessConfidence >= model.ThresholdSuggest
+}
+
+// approveBusiness marks a conversation reviewed and, when its classifier
+// label is not already business, records a business user override — the one
+// approve path shared by classify approve and approve --all.
+func approveBusiness(e *env, conversationID string) error {
+	cls, err := e.st.GetConversationClassification(conversationID)
+	if err != nil {
+		return err
+	}
+	if err := e.st.MarkReviewed(conversationID); err != nil {
+		return err
+	}
+	if cls == nil || cls.Classification != model.ConvBusiness {
+		return e.st.SetUserOverride(conversationID, model.ConvBusiness)
+	}
+	return nil
+}
+
+// classifyApproveAll approves every conversation in the "Suggested business"
+// bucket — the same set classify review lists under that header.
+func classifyApproveAll(e *env, stdout io.Writer) error {
+	convs, err := e.st.ListConversations(store.ConversationFilter{})
+	if err != nil {
+		return err
+	}
+	n := 0
+	for _, conv := range convs {
+		cls, err := e.st.GetConversationClassification(conv.ID)
+		if err != nil {
+			return err
+		}
+		if !suggestedBusiness(cls) {
+			continue
+		}
+		if err := approveBusiness(e, conv.ID); err != nil {
+			return err
+		}
+		if err := e.st.AddAuditEvent(model.AuditEvent{
+			WorkspaceID: e.ws.ID,
+			EventType:   "user_override",
+			Subject:     conv.ID,
+			Detail:      fmt.Sprintf("user approved %q as business via CLI --all", convDisplayName(conv)),
+		}); err != nil {
+			return err
+		}
+		fmt.Fprintf(stdout, "Approved %s  %s\n", conv.ID, convDisplayName(conv))
+		n++
+	}
+	if n == 0 {
+		fmt.Fprintln(stdout, "No suggested business conversations to approve.")
+		return nil
+	}
+	fmt.Fprintf(stdout, "\nApproved %d conversation(s). Run: ib extract --approved-only\n", n)
 	return nil
 }
 
@@ -128,17 +202,8 @@ func classifyVerdict(e *env, verdict, conversationID string, stdout io.Writer) e
 	var detail, confirmation string
 	switch verdict {
 	case "approve":
-		cls, err := e.st.GetConversationClassification(conversationID)
-		if err != nil {
+		if err := approveBusiness(e, conversationID); err != nil {
 			return err
-		}
-		if err := e.st.MarkReviewed(conversationID); err != nil {
-			return err
-		}
-		if cls == nil || cls.Classification != model.ConvBusiness {
-			if err := e.st.SetUserOverride(conversationID, model.ConvBusiness); err != nil {
-				return err
-			}
 		}
 		detail = fmt.Sprintf("user approved %q as business via CLI", name)
 		confirmation = fmt.Sprintf("Approved %q (%s) as business — extract it with: ib extract --approved-only", name, conversationID)
