@@ -8,6 +8,7 @@ import "time"
 const (
 	ChannelTelegram = "telegram"
 	ChannelWhatsApp = "whatsapp"
+	ChannelEmail    = "email"
 	ChannelDemo     = "demo"
 )
 
@@ -15,6 +16,7 @@ const (
 const (
 	ProviderTelegramBotAPI = "telegram_bot_api"
 	ProviderWacli          = "wacli"
+	ProviderIMAP           = "imap"
 	ProviderManualDemo     = "manual_demo"
 )
 

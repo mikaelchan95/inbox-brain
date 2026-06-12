@@ -53,6 +53,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		err = cmdSearch(rest, stdout)
 	case "telegram":
 		err = cmdTelegram(rest, stdout)
+	case "email":
+		err = cmdEmail(rest, stdout)
 	case "sync":
 		err = cmdSync(rest, stdout)
 	case "dev":
@@ -83,7 +85,10 @@ Setup
 
 Connect & sync
   telegram connect                    register a Telegram bot (needs TELEGRAM_BOT_TOKEN)
+  email add --user ADDR [--host H]    register an IMAP mailbox (needs IMAP_PASSWORD)
+  email list                          list configured email accounts
   sync telegram [--once|--follow]     fetch new Telegram messages
+  sync email [--once|--follow]        fetch new email messages
   sync whatsapp-wacli --db PATH       import WhatsApp messages from a wacli.db
 
 Classify & extract

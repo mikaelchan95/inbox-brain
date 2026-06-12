@@ -18,6 +18,7 @@ internal/leaks/              revenue leak detection
 internal/search/             search across approved data
 internal/api/                HTTP JSON API + server-rendered dashboard
 internal/connector/telegram/ Telegram Bot API connector
+internal/connector/email/    IMAP connector (hosted domains, Gmail, Yahoo, ...)
 internal/connector/wacli/    read-only wacli.db importer
 internal/connector/demo/     demo scenario seeder
 docs/                        SPEC.md (product), ARCHITECTURE.md (this file)
@@ -313,6 +314,29 @@ func NormalizeUpdate(raw json.RawMessage, connectorID, workspaceID string) (*Nor
 type Normalized struct{ Conversation model.Conversation; Customer model.Customer; Message model.Message }
 ```
 Dedupe key: `telegram_bot_api:<connector_id>:<chat_id>:<message_id>`.
+
+## internal/connector/email
+
+```go
+type Account struct{ Address, Host string; Port int; Password, Folder string; InitialDays int } // JSON in email_accounts.json (0600)
+func LoadAccounts(home string) ([]Account, error)
+func SaveAccounts(home string, accounts []Account) error
+func DefaultHost(address string) string // IMAP server for well-known domains (gmail, yahoo, ...), "" otherwise
+type Connector struct{ Account Account; Store *store.Store; Workspace model.Workspace; ConnectorRow model.Connector /* unexported dial override in tests */ }
+func Connect(s *store.Store, account Account) (*Connector, error) // logs in + selects folder, upserts connector row
+func (c *Connector) SyncOnce(ctx context.Context) (int, error)    // UID search from stored cursor, fetch with BODY.PEEK (read-only), normalize+store, advance cursor
+func (c *Connector) Follow(ctx context.Context) error             // poll loop (60s), backoff on failure, marks connector degraded after repeated errors
+func NormalizeEmail(raw []byte, uid imap.UID, uidValidity uint32, internalDate time.Time, account Account, connectorID, workspaceID string) (*Normalized, error)
+```
+One connector row per account (`channel=email`, `provider=imap`, name=address).
+Conversations group by counterpart address (the sender for inbound mail, the
+first recipient for mail sent by the account itself). The subject is prefixed
+onto the body; text/plain is preferred with stripped text/html as fallback;
+attachments become Media entries (metadata only). Cursor:
+`<uidvalidity>:<lastuid>` — a UIDVALIDITY change resets it and dedupe keys
+absorb the refetch. First sync imports the last InitialDays days (default 30).
+Tests run against go-imap's in-memory IMAP server. Dedupe key:
+`imap:<connector_id>:<counterpart_address>:<message_id_header>`.
 
 ## internal/connector/wacli
 

@@ -1,7 +1,7 @@
 <h1 align="center">Inbox Brain</h1>
 
 <p align="center">
-  Turn messy Telegram &amp; WhatsApp chats into business actions —
+  Turn messy Telegram, WhatsApp &amp; email chats into business actions —
   leads, bookings, quotes, complaints, payments, follow-ups —
   <b>without giving an AI access to your personal messages.</b>
 </p>
@@ -117,6 +117,15 @@ ib telegram connect
 ib sync telegram --once     # or --follow
 ```
 
+**Email via IMAP** (any provider): works with self-hosted domains as well as Gmail, Yahoo, Outlook and iCloud — for those, generate an app password and skip `--host`. Mail is fetched read-only (messages stay unread) and conversations group by correspondent. Accounts are stored in a `0600` file under `~/.inbox-brain`.
+
+```bash
+export IMAP_PASSWORD=...
+ib email add --user inbox@thewinery.com.sg --host imap.thewinery.com.sg
+ib email add --user you@gmail.com          # host inferred for well-known providers
+ib sync email --once        # or --follow
+```
+
 **WhatsApp via wacli** (local/self-hosted, experimental): syncs by reading an existing [`wacli`](https://github.com/steipete/wacli) database in read-only mode. Inbox Brain never writes to `wacli.db` and never touches WhatsApp session data.
 
 ```bash
@@ -149,7 +158,10 @@ Without any of these, Inbox Brain falls back to a deterministic rules-based extr
 | `ib demo seed --scenario NAME` | Load a demo scenario (`tuition-center`, `design-studio`) |
 | `ib doctor` | Check the local installation |
 | `ib telegram connect` | Register a Telegram bot (needs `TELEGRAM_BOT_TOKEN`) |
+| `ib email add --user ADDR [--host H]` | Register an IMAP mailbox (needs `IMAP_PASSWORD`) |
+| `ib email list` | List configured email accounts |
 | `ib sync telegram [--once\|--follow]` | Fetch new Telegram messages |
+| `ib sync email [--once\|--follow]` | Fetch new email messages |
 | `ib sync whatsapp-wacli --db PATH` | Import WhatsApp messages from a `wacli.db` |
 | `ib classify conversations` | Run the local business/personal classifier |
 | `ib classify review` | List chats waiting for review |

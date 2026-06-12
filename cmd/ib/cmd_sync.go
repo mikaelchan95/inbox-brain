@@ -41,18 +41,21 @@ func cmdTelegram(args []string, stdout io.Writer) error {
 	return nil
 }
 
-// cmdSync dispatches "ib sync telegram" and "ib sync whatsapp-wacli".
+// cmdSync dispatches "ib sync telegram", "ib sync email" and
+// "ib sync whatsapp-wacli".
 func cmdSync(args []string, stdout io.Writer) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: ib sync telegram [--once|--follow] | ib sync whatsapp-wacli --db PATH")
+		return fmt.Errorf("usage: ib sync telegram [--once|--follow] | ib sync email [--once|--follow] | ib sync whatsapp-wacli --db PATH")
 	}
 	switch args[0] {
 	case "telegram":
 		return syncTelegram(args[1:], stdout)
+	case "email":
+		return syncEmail(args[1:], stdout)
 	case "whatsapp-wacli":
 		return syncWacli(args[1:], stdout)
 	default:
-		return fmt.Errorf("unknown sync source %q (expected telegram or whatsapp-wacli)", args[0])
+		return fmt.Errorf("unknown sync source %q (expected telegram, email or whatsapp-wacli)", args[0])
 	}
 }
 
