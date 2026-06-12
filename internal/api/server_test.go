@@ -384,6 +384,45 @@ func TestReviewFormFallback(t *testing.T) {
 	wantStatus(t, f.post("/review/conv_missing/approve", ""), http.StatusNotFound)
 }
 
+func TestReviewApproveRedirectsBackToReferer(t *testing.T) {
+	f := newFixture(t)
+	req := httptest.NewRequest(http.MethodPost, "/review/"+f.mrsTan.ID+"/approve", strings.NewReader(""))
+	req.Header.Set("Referer", "http://localhost/conversations/"+f.mrsTan.ID)
+	rec := httptest.NewRecorder()
+	f.h.ServeHTTP(rec, req)
+	wantStatus(t, rec, http.StatusSeeOther)
+	if loc, want := rec.Header().Get("Location"), "/conversations/"+f.mrsTan.ID; loc != want {
+		t.Fatalf("Location = %q, want %q", loc, want)
+	}
+}
+
+// Ignoring a chat from its own page must not redirect back to it: the page
+// would re-render the personal messages just hidden (spec §25).
+func TestReviewIgnoreAlwaysRedirectsToReview(t *testing.T) {
+	f := newFixture(t)
+	req := httptest.NewRequest(http.MethodPost, "/review/"+f.mrsTan.ID+"/ignore", strings.NewReader(""))
+	req.Header.Set("Referer", "http://localhost/conversations/"+f.mrsTan.ID)
+	rec := httptest.NewRecorder()
+	f.h.ServeHTTP(rec, req)
+	wantStatus(t, rec, http.StatusSeeOther)
+	if loc := rec.Header().Get("Location"); loc != "/review" {
+		t.Fatalf("Location = %q, want /review", loc)
+	}
+}
+
+func TestRedirectTargetRejectsSchemeRelativePaths(t *testing.T) {
+	for ref, want := range map[string]string{
+		"http://localhost/conversations/c1": "/conversations/c1",
+		"https://evil.com//phish.example/x": "/fallback",
+	} {
+		req := httptest.NewRequest(http.MethodGet, "/x", nil)
+		req.Header.Set("Referer", ref)
+		if got := redirectTarget(req, "/fallback"); got != want {
+			t.Errorf("redirectTarget(Referer=%q) = %q, want %q", ref, got, want)
+		}
+	}
+}
+
 func TestActionFormFallbacks(t *testing.T) {
 	f := newFixture(t)
 

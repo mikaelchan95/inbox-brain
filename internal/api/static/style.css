@@ -117,7 +117,14 @@ textarea.reply {
   color: #4b5563;
 }
 
-.message { padding: 10px 2px; border-bottom: 1px solid #f3f4f6; }
+.message {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 0 0 10px;
+  background: #ffffff;
+}
+.message-out { background: #f9fafb; border-color: #e0e7ff; }
 .message .meta {
   display: flex;
   flex-wrap: wrap;
@@ -125,7 +132,21 @@ textarea.reply {
   align-items: center;
   font-size: 12px;
   color: #6b7280;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+}
+.msg-subject { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+.msg-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+}
+details.quoted { margin-top: 8px; color: #6b7280; }
+details.quoted summary { cursor: pointer; font-size: 12px; }
+details.quoted .msg-body {
+  margin-top: 6px;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
+  font-size: 13px;
 }
 
 input[type="search"], input[type="text"] {

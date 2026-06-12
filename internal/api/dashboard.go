@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mikaelchan95/inbox-brain/internal/leaks"
@@ -178,9 +179,20 @@ func (sv *server) recentSnippets(conversationID string, n int) ([]string, error)
 	out := make([]string, 0, len(msgs))
 	for _, m := range msgs {
 		s := m.Body
+		if m.Channel == model.ChannelEmail {
+			subject, visible, quoted := parseEmailBody(m.Body)
+			s = visible
+			if s == "" {
+				s = subject
+			}
+			if s == "" {
+				s = quoted // quote-only reply with no subject: better than nothing
+			}
+		}
 		if m.SenderName != "" {
 			s = m.SenderName + ": " + s
 		}
+		s = strings.Join(strings.Fields(s), " ") // one line per snippet
 		out = append(out, truncate(s, 120))
 	}
 	return out, nil
@@ -201,7 +213,14 @@ func (sv *server) formReview(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	http.Redirect(w, r, "/review", http.StatusSeeOther)
+	// Ignoring marks the chat personal: always land on /review rather than
+	// back on the conversation page, which would re-render the personal
+	// messages just hidden (spec §25).
+	target := "/review"
+	if verb != "ignore" && verb != "always-ignore" {
+		target = redirectTarget(r, "/review")
+	}
+	http.Redirect(w, r, target, http.StatusSeeOther)
 }
 
 // ---------------------------------------------------------------------------
@@ -245,6 +264,24 @@ func (sv *server) pageConversations(w http.ResponseWriter, _ *http.Request) {
 type messageView struct {
 	Message model.Message
 	Chip    string // per-message classification label; only set for mixed chats
+	Sender  string // display name for the meta row
+	Subject string // email subject, set only when it changes within the thread
+	Body    string // visible text (for email: quoted history split off)
+	Quoted  string // collapsed quoted/forwarded history; "" when none
+}
+
+// senderLabel names a message's sender: the stored name when present (shared
+// mailboxes keep the real author), then "You" for outbound, then the handle.
+func senderLabel(m model.Message) string {
+	switch {
+	case m.SenderName != "":
+		return m.SenderName
+	case m.Direction == model.DirectionOutbound:
+		return "You"
+	case m.SenderHandle != "":
+		return m.SenderHandle
+	}
+	return m.Direction
 }
 
 type conversationData struct {
@@ -280,8 +317,27 @@ func (sv *server) pageConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	views := make([]messageView, 0, len(msgs))
+	prevSubject := ""
 	for _, m := range msgs {
-		v := messageView{Message: m}
+		v := messageView{Message: m, Sender: senderLabel(m), Body: m.Body}
+		if m.Channel == model.ChannelEmail {
+			subject, visible, quoted := parseEmailBody(m.Body)
+			v.Body, v.Quoted = visible, quoted
+			if subject != "" {
+				// Repeat an unchanged subject when there is no body text
+				// at all — never render an empty bubble.
+				ns := normalizeSubject(subject)
+				if ns != prevSubject || visible == "" {
+					v.Subject = subject
+				}
+				if ns != "" {
+					prevSubject = ns
+				}
+			}
+			if v.Subject == "" && v.Body == "" && v.Quoted == "" {
+				v.Body = m.Body // parser found nothing displayable; show as stored
+			}
+		}
 		if label == model.ConvMixed {
 			mc, err := sv.store.GetMessageClassification(m.ID)
 			if err != nil {

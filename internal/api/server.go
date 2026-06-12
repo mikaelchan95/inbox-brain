@@ -299,11 +299,16 @@ func truncate(s string, n int) string {
 }
 
 // redirectTarget returns the Referer's path+query when present (same-page
-// redirect for form fallbacks), otherwise the fallback path.
+// redirect for form fallbacks), otherwise the fallback path. Only local
+// absolute paths are accepted: a "//host" path would be treated as a
+// scheme-relative URL by browsers (open redirect). Backslashes are already
+// percent-encoded by RequestURI.
 func redirectTarget(r *http.Request, fallback string) string {
 	if ref := r.Header.Get("Referer"); ref != "" {
 		if u, err := url.Parse(ref); err == nil && u.Path != "" {
-			return u.RequestURI()
+			if p := u.RequestURI(); strings.HasPrefix(p, "/") && !strings.HasPrefix(p, "//") {
+				return p
+			}
 		}
 	}
 	return fallback

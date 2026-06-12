@@ -2,21 +2,28 @@
 {{define "content"}}
 <h1>{{.Name}} <span class="chip chip-{{.Label}}">{{.Label}}</span></h1>
 <p class="muted">{{.Conversation.Channel}}{{if .Classification}} · {{pct .Confidence}}% business{{with .Reason}} · {{.}}{{end}}{{end}}</p>
+<div class="actions-row">
+<form method="post" action="/review/{{.Conversation.ID}}/approve"><button class="btn" type="submit">Include as business</button></form>
+<form method="post" action="/review/{{.Conversation.ID}}/ignore"><button class="btn btn-secondary" type="submit">Ignore as personal</button></form>
+<form method="post" action="/review/{{.Conversation.ID}}/mark-mixed"><button class="btn btn-secondary" type="submit">Mark mixed</button></form>
+</div>
 
-<h2 class="section-label">Messages</h2>
+<h2 class="section-label">Actions</h2>
+{{range .Actions}}{{template "actioncard" .}}{{else}}<p class="muted">No actions for this conversation yet — include it as business, then run <code>ib extract --approved-only</code>.</p>{{end}}
+
+<h2 class="section-label">Messages · {{len .Messages}}</h2>
 {{range .Messages}}
-<div class="message">
+<div class="message{{if eq .Message.Direction "outbound"}} message-out{{end}}">
 <div class="meta">
-<strong>{{if .Message.SenderName}}{{.Message.SenderName}}{{else}}{{.Message.Direction}}{{end}}</strong>
+<strong>{{.Sender}}</strong>
 <span>{{timefmt .Message.OccurredAt}}</span>
 {{with .Chip}}<span class="chip chip-{{.}}">{{.}}</span>{{end}}
 </div>
-<div>{{.Message.Body}}</div>
+{{with .Subject}}<div class="msg-subject">{{.}}</div>{{end}}
+{{with .Body}}<div class="msg-body">{{.}}</div>{{end}}
+{{with .Quoted}}<details class="quoted"><summary>Quoted history</summary><div class="msg-body">{{.}}</div></details>{{end}}
 </div>
 {{else}}
 <p class="muted">No messages.</p>
 {{end}}
-
-<h2 class="section-label">Actions</h2>
-{{range .Actions}}{{template "actioncard" .}}{{else}}<p class="muted">No actions for this conversation.</p>{{end}}
 {{end}}
