@@ -387,10 +387,16 @@ fonts, no external assets (all CSS embedded, no CDN).
 ## cmd/ib
 
 Stdlib `flag` with a subcommand switch (no cobra). Commands per spec §23:
-`init, demo seed --scenario X, dev, telegram connect, sync telegram
---once|--follow, sync whatsapp-wacli --db PATH, classify
+`onboard, init, demo seed --scenario X, dev, telegram connect, email
+add|list, sync telegram --once|--follow, sync email --once|--follow
+[--account ADDR], sync whatsapp-wacli --db PATH, classify
 conversations|review|approve|ignore|mixed, extract --approved-only, today,
 leaks [--json], actions [--json], search QUERY, doctor`.
+`ib onboard` is the guided setup wizard (cmd_onboard.go): re-runnable,
+prefills from the existing config, falls back to defaults when input is
+exhausted (Ctrl-D / scripts), hides passwords via golang.org/x/term on a
+TTY, detects claude/codex/ANTHROPIC_API_KEY for the provider step, and ends
+with a first sync + classification of whatever was connected.
 `ib init` prompts for the business profile interactively when stdin is a TTY
 (accept-defaults with --yes). `ib doctor` checks: home dir, DB opens, config
 valid, telegram token present, ANTHROPIC_API_KEY present, wacli.db readable.

@@ -35,6 +35,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "help", "-h", "--help":
 		usage(stdout)
 		return 0
+	case "onboard":
+		err = cmdOnboard(rest, stdout)
 	case "init":
 		err = cmdInit(rest, stdout)
 	case "demo":
@@ -78,7 +80,10 @@ func usage(w io.Writer) {
 
 Usage: ib <command> [flags]
 
+New here? Run: ib onboard
+
 Setup
+  onboard                             guided setup: profile, inboxes, AI, first sync
   init [--yes]                        create the data directory, config and database
   demo seed --scenario NAME           load a demo scenario (default: tuition-center)
   doctor                              check the local installation
