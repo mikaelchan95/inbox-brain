@@ -74,23 +74,7 @@ func emailAdd(args []string, stdout io.Writer) error {
 	if _, err := email.Connect(e.st, account); err != nil {
 		return err
 	}
-
-	accounts, err := email.LoadAccounts(e.home)
-	if err != nil {
-		return err
-	}
-	replaced := false
-	for i := range accounts {
-		if accounts[i].Address == account.Address {
-			accounts[i] = account
-			replaced = true
-			break
-		}
-	}
-	if !replaced {
-		accounts = append(accounts, account)
-	}
-	if err := email.SaveAccounts(e.home, accounts); err != nil {
+	if err := email.UpsertAccount(e.home, account); err != nil {
 		return err
 	}
 	fmt.Fprintf(stdout, "Connected %s (%s, folder %s).\n", account.Address, account.Addr(), account.FolderOrDefault())

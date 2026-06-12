@@ -81,7 +81,7 @@ func Default(home string) *Config {
 }
 
 // ErrNotInitialized is returned by Load when ib init has not been run.
-var ErrNotInitialized = errors.New("inbox brain is not initialized; run: ib init")
+var ErrNotInitialized = errors.New("inbox brain is not initialized; run: ib onboard")
 
 // Init creates the home directory and a default config file if missing.
 // It is safe to call repeatedly; an existing config is loaded, not replaced.

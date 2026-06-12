@@ -94,3 +94,24 @@ func SaveAccounts(home string, accounts []Account) error {
 	}
 	return os.WriteFile(AccountsPath(home), append(data, '\n'), 0o600)
 }
+
+// UpsertAccount adds an account to the accounts file, replacing any existing
+// entry with the same address.
+func UpsertAccount(home string, account Account) error {
+	accounts, err := LoadAccounts(home)
+	if err != nil {
+		return err
+	}
+	replaced := false
+	for i := range accounts {
+		if accounts[i].Address == account.Address {
+			accounts[i] = account
+			replaced = true
+			break
+		}
+	}
+	if !replaced {
+		accounts = append(accounts, account)
+	}
+	return SaveAccounts(home, accounts)
+}
